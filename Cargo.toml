@@ -54,6 +54,7 @@ members = [
     "rbpf-cli",
     "remote-wallet",
     "rpc",
+    "rpc-server",
     "runtime",
     "runtime/store-tool",
     "sdk",
