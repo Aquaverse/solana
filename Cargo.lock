@@ -3794,10 +3794,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rpc-server"
-version = "0.1.0"
-
-[[package]]
 name = "rustc-demangle"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5606,6 +5602,60 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util",
+]
+
+[[package]]
+name = "solana-rpc-server"
+version = "1.9.0"
+dependencies = [
+ "chrono",
+ "clap 2.33.3",
+ "console",
+ "core_affinity",
+ "crossbeam-channel",
+ "fd-lock",
+ "indicatif",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "jsonrpc-ipc-server",
+ "jsonrpc-server-utils",
+ "libc",
+ "log 0.4.14",
+ "num_cpus",
+ "rand 0.7.3",
+ "serde",
+ "serde_derive",
+ "signal-hook",
+ "solana-accountsdb-plugin-manager",
+ "solana-clap-utils",
+ "solana-cli-config",
+ "solana-client",
+ "solana-core",
+ "solana-download-utils",
+ "solana-entry",
+ "solana-faucet",
+ "solana-genesis-utils",
+ "solana-gossip",
+ "solana-ledger",
+ "solana-logger 1.9.0",
+ "solana-measure",
+ "solana-metrics",
+ "solana-net-utils",
+ "solana-perf",
+ "solana-poh",
+ "solana-replica-lib",
+ "solana-rpc",
+ "solana-runtime",
+ "solana-sdk",
+ "solana-send-transaction-service",
+ "solana-streamer",
+ "solana-test-validator",
+ "solana-version",
+ "solana-vote-program",
+ "symlink",
+ "sysctl",
+ "tikv-jemallocator",
 ]
 
 [[package]]

@@ -1,4 +1,5 @@
 #![allow(clippy::integer_arithmetic)]
+
 use {
     clap::{
         crate_description, crate_name, value_t, value_t_or_exit, values_t, values_t_or_exit, App,
@@ -35,6 +36,10 @@ use {
     solana_poh::poh_service,
     solana_replica_lib::accountsdb_repl_server::AccountsDbReplServiceConfig,
     solana_rpc::{rpc::JsonRpcConfig, rpc_pubsub_service::PubSubConfig},
+    solana_rpc_server::{
+        bootstrap, ledger_lockfile, lock_ledger, port_validator,
+        new_spinner_progress_bar, println_name_value, redirect_stderr_to_file,
+    },
     solana_runtime::{
         accounts_db::{
             AccountShrinkThreshold, AccountsDbConfig, DEFAULT_ACCOUNTS_SHRINK_OPTIMIZE_TOTAL_SPACE,
@@ -62,10 +67,6 @@ use {
     },
     solana_send_transaction_service::send_transaction_service,
     solana_streamer::socket::SocketAddrSpace,
-    solana_validator::{
-        admin_rpc_service, bootstrap, dashboard::Dashboard, ledger_lockfile, lock_ledger,
-        new_spinner_progress_bar, println_name_value, redirect_stderr_to_file,
-    },
     std::{
         collections::{HashSet, VecDeque},
         env,
@@ -99,18 +100,7 @@ const DEFAULT_MIN_SNAPSHOT_DOWNLOAD_SPEED: u64 = 10485760;
 // The maximum times of snapshot download abort and retry
 const MAX_SNAPSHOT_DOWNLOAD_ABORT: u32 = 5;
 
-fn monitor_validator(ledger_path: &Path) {
-    let dashboard = Dashboard::new(ledger_path, None, None).unwrap_or_else(|err| {
-        println!(
-            "Error: Unable to connect to validator at {}: {:?}",
-            ledger_path.display(),
-            err,
-        );
-        exit(1);
-    });
-    dashboard.run(Duration::from_secs(2));
-}
-
+/*
 fn wait_for_restart_window(
     ledger_path: &Path,
     identity: Option<Pubkey>,
@@ -351,6 +341,7 @@ fn wait_for_restart_window(
     println!("{}", style("Ready to restart").green());
     Ok(())
 }
+*/
 
 fn hash_validator(hash: String) -> Result<(), String> {
     Hash::from_str(&hash)
@@ -652,7 +643,7 @@ pub fn main() {
                 .long("rpc-port")
                 .value_name("PORT")
                 .takes_value(true)
-                .validator(solana_validator::port_validator)
+                .validator(solana_rpc_server::port_validator)
                 .help("Enable JSON RPC on this port, and the next port for the RPC websocket"),
         )
         .arg(
@@ -853,7 +844,7 @@ pub fn main() {
                 .value_name("MIN_PORT-MAX_PORT")
                 .takes_value(true)
                 .default_value(default_dynamic_port_range)
-                .validator(solana_validator::port_range_validator)
+                .validator(solana_rpc_server::port_range_validator)
                 .help("Range to use for dynamically assigned ports"),
         )
         .arg(
@@ -1350,7 +1341,7 @@ pub fn main() {
                 .long("accountsdb-repl-port")
                 .value_name("PORT")
                 .takes_value(true)
-                .validator(solana_validator::port_validator)
+                .validator(solana_rpc_server::port_validator)
                 .hidden(true)
                 .help("Enable AccountsDb Replication Service on this port"),
         )
@@ -1772,6 +1763,7 @@ pub fn main() {
                         authorized_voter_keypair.display()
                     );
 
+                    /*
                     let admin_client = admin_rpc_service::connect(&ledger_path);
                     admin_rpc_service::runtime()
                         .block_on(async move {
@@ -1786,9 +1778,12 @@ pub fn main() {
                             println!("addAuthorizedVoter request failed: {}", err);
                             exit(1);
                         });
+
+                     */
                     return;
                 }
                 ("remove-all", _) => {
+                    /*
                     let admin_client = admin_rpc_service::connect(&ledger_path);
                     admin_rpc_service::runtime()
                         .block_on(async move {
@@ -1799,6 +1794,8 @@ pub fn main() {
                             exit(1);
                         });
                     println!("All authorized voters removed");
+
+                     */
                     return;
                 }
                 _ => unreachable!(),
@@ -1813,13 +1810,14 @@ pub fn main() {
                 value_t_or_exit!(subcommand_matches, "max_delinquent_stake", u8);
 
             if !force {
-                wait_for_restart_window(&ledger_path, None, min_idle_time, max_delinquent_stake)
-                    .unwrap_or_else(|err| {
-                        println!("{}", err);
-                        exit(1);
-                    });
+                //wait_for_restart_window(&ledger_path, None, min_idle_time, max_delinquent_stake)
+                //    .unwrap_or_else(|err| {
+                //        println!("{}", err);
+                //        exit(1);
+                //    });
             }
 
+            /*
             let admin_client = admin_rpc_service::connect(&ledger_path);
             admin_rpc_service::runtime()
                 .block_on(async move { admin_client.await?.exit().await })
@@ -1832,12 +1830,13 @@ pub fn main() {
             if monitor {
                 monitor_validator(&ledger_path);
             }
+            */
             return;
         }
-        ("monitor", _) => {
-            monitor_validator(&ledger_path);
-            return;
-        }
+        //("monitor", _) => {
+        //    monitor_validator(&ledger_path);
+        //    return;
+        //}
         ("set-identity", Some(subcommand_matches)) => {
             let identity_keypair = value_t_or_exit!(subcommand_matches, "identity", String);
 
@@ -1847,6 +1846,7 @@ pub fn main() {
             });
             println!("Validator identity: {}", identity_keypair.display());
 
+            /*
             let admin_client = admin_rpc_service::connect(&ledger_path);
             admin_rpc_service::runtime()
                 .block_on(async move {
@@ -1859,10 +1859,13 @@ pub fn main() {
                     println!("setIdentity request failed: {}", err);
                     exit(1);
                 });
+
+             */
             return;
         }
         ("set-log-filter", Some(subcommand_matches)) => {
             let filter = value_t_or_exit!(subcommand_matches, "filter", String);
+            /*
             let admin_client = admin_rpc_service::connect(&ledger_path);
             admin_rpc_service::runtime()
                 .block_on(async move { admin_client.await?.set_log_filter(filter).await })
@@ -1870,8 +1873,11 @@ pub fn main() {
                     println!("set log filter failed: {}", err);
                     exit(1);
                 });
+
+             */
             return;
         }
+        /*
         ("wait-for-restart-window", Some(subcommand_matches)) => {
             let min_idle_time = value_t_or_exit!(subcommand_matches, "min_idle_time", usize);
             let identity = pubkey_of(subcommand_matches, "identity");
@@ -1885,6 +1891,7 @@ pub fn main() {
                 });
             return;
         }
+         */
         _ => unreachable!(),
     };
 
@@ -2478,6 +2485,7 @@ pub fn main() {
 
     let start_progress = Arc::new(RwLock::new(ValidatorStartProgress::default()));
     let admin_service_cluster_info = Arc::new(RwLock::new(None));
+    /*
     admin_rpc_service::run(
         &ledger_path,
         admin_rpc_service::AdminRpcRequestMetadata {
@@ -2490,6 +2498,8 @@ pub fn main() {
             tower_storage: validator_config.tower_storage.clone(),
         },
     );
+    
+     */
 
     let gossip_host: IpAddr = matches
         .value_of("gossip_host")
